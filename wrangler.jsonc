@@ -1,0 +1,16 @@
+{
+  "name": "odd-king-296f",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pharmacy-lb",
+      "database_id": "4bc4dc4d-b926-408a-b6f2-4dec86c707d7"
+    }
+  ]
+}
