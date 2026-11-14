@@ -5744,12 +5744,21 @@ async function send(){
 function hist(){
   var a=ld().slice().reverse();
   modal('Riwayat Pojok Developer',a.length?a.map(function(r){return'<div class="fb-i"><b>'+E(r.k)+'</b> \u2022 '+new Date(r.t).toLocaleString('id-ID')+' \u2022 '+(r.ok?'terkirim':'menunggu')+'<br>'+E(r.m)+'</div>'}).join(''):'Belum ada pesan.',[{t:'Kembali',fn:pojok},{t:'Tutup'}]);flush()}
+function fbRows(rows,again){modal('Kotak masuk developer',rows.length?rows.map(function(r){return'<div class="fb-i"><b>'+E(r.k)+'</b> \u2022 '+E(r.n)+' Lv'+Number(r.lv||0)+' \u2022 '+new Date(r.t).toLocaleString('id-ID')+'<br>'+E(r.m)+'</div>'}).join(''):'Belum ada pesan masuk.',[{t:'Segarkan',fn:again},{t:'Kembali',fn:pojok},{t:'Tutup'}])}
+function tokUI(msg){modal('Kotak masuk developer',(msg?'<b>'+E(msg)+'</b><br>':'')+'Masukkan kunci admin (ADMIN_KEY) yang sama dengan panel redeem. Hanya disimpan di perangkat ini.<br><input id="fb-tok" type="password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:7px;margin-top:6px;user-select:text;-webkit-user-select:text">',[{t:'Simpan & muat',fn:function(){var v=($('fb-tok')||{}).value||'';if(!v.trim())return;try{localStorage.setItem('plAdminKey',v.trim())}catch(e){}inbox()}},{t:'Kembali',fn:pojok},{t:'Tutup'}]);var t=$('fb-tok');if(t)['keydown','keyup'].forEach(function(ev){t.addEventListener(ev,function(e){e.stopPropagation()})})}
 async function inbox(){
-  if(!(window.NET&&NET.db)){modal('Kotak masuk developer','Koneksi database belum aktif di sesi ini.',[{t:'Kembali',fn:pojok},{t:'Tutup'}]);return}
+  if(window.NET&&NET.db){modal('Kotak masuk developer','Memuat\u2026',[{t:'Tutup'}]);
+    try{var sn=await NET.db.collection('feedback').orderBy('t','desc').limit(30).get();return fbRows(sn.docs.map(function(d){return(typeof d.data==='function'?d.data():d.data)||{}}),inbox)}
+    catch(e){return modal('Kotak masuk developer','Gagal memuat. Coba lagi nanti.',[{t:'Coba lagi',fn:inbox},{t:'Tutup'}])}}
+  var tok='';try{tok=localStorage.getItem('plAdminKey')||''}catch(e){}
+  if(!tok)return tokUI();
   modal('Kotak masuk developer','Memuat\u2026',[{t:'Tutup'}]);
-  try{var sn=await NET.db.collection('feedback').orderBy('t','desc').limit(30).get(),rows=sn.docs.map(function(d){return(typeof d.data==='function'?d.data():d.data)||{}});
-    modal('Kotak masuk developer',rows.length?rows.map(function(r){return'<div class="fb-i"><b>'+E(r.k)+'</b> \u2022 '+E(r.n)+' Lv'+Number(r.lv||0)+' \u2022 '+new Date(r.t).toLocaleString('id-ID')+'<br>'+E(r.m)+'</div>'}).join(''):'Belum ada pesan masuk.',[{t:'Segarkan',fn:inbox},{t:'Kembali',fn:pojok},{t:'Tutup'}])}
-  catch(e){modal('Kotak masuk developer','Gagal memuat. Coba lagi nanti.',[{t:'Coba lagi',fn:inbox},{t:'Tutup'}])}}
+  try{var x=await fetch(location.origin+'/redeem/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:tok,action:'fb_list'})});
+    if(x.status==401){try{localStorage.removeItem('plAdminKey')}catch(e){}return tokUI('Kunci admin salah.')}
+    var j=await x.json().catch(function(){return{}});
+    if(!x.ok||!j.ok)return modal('Kotak masuk developer',E(j.error||'Gagal memuat (kode '+x.status+').'),[{t:'Coba lagi',fn:inbox},{t:'Kembali',fn:pojok},{t:'Tutup'}]);
+    fbRows(j.rows||[],inbox)}
+  catch(e){modal('Kotak masuk developer','Gagal terhubung ke server. Cek koneksi lalu coba lagi.',[{t:'Coba lagi',fn:inbox},{t:'Tutup'}])}}
 window.pojokDeveloper=pojok;
 var _m0=menu;menu=function(){_m0.apply(this,arguments);try{var x=$('mbtn'),b=document.createElement('button');b.textContent='\u{1F4EE} Pojok Developer';b.onclick=function(){if(performance.now()-MO<400)return;pojok()};x.insertBefore(b,x.firstElementChild?x.children[Math.min(1,x.children.length-1)]:null)}catch(e){}};
 function hud(){var bt=$('bt');if(bt&&!$('bfb')){var b=document.createElement('button');b.id='bfb';b.type='button';b.title='Pojok Developer';b.textContent='\u{1F4EE}';b.onclick=pojok;bt.appendChild(b)}}
