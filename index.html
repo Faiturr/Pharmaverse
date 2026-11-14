@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id"><head><meta charset="utf-8"><title>Pharmacy Life: The Pharmacist</title>
+<html lang="id"><head><meta charset="utf-8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#372619"><link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icon-192.png"><link rel="icon" type="image/png" href="/icon-192.png"><title>Pharmacy Life: The Pharmacist</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@400;700&family=Gaegu:wght@400;700&family=Shantell+Sans:wght@500;700&family=Playpen+Sans:wght@500;700&family=Fuzzy+Bubbles:wght@400;700&family=Mali:wght@500;700&family=Comic+Neue:wght@400;700&family=Courier+Prime:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#263a52;--paper:#f6fafd;--acc:#507eab;--mint:#bce0d6;--bs:1;box-sizing:border-box}
@@ -1563,11 +1563,13 @@ window.toggleFS=function(){
     return;
   }
   if(fsOn()){
+    try{localStorage.setItem('plNoAutoFS','1')}catch(e){}
     try{(document.exitFullscreen||document.webkitExitFullscreen).call(document)}catch(e){}
     try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}
     return;
   }
   var p;
+  try{localStorage.removeItem('plNoAutoFS')}catch(e){}
   try{p=de.requestFullscreen?de.requestFullscreen({navigationUI:'hide'}):de.webkitRequestFullscreen()}catch(e){p=Promise.reject(e)}
   Promise.resolve(p).then(lockLand).catch(function(){toast('Layar penuh ditolak browser. Coba buka game di tab sendiri.')});
 };
@@ -4680,9 +4682,9 @@ function enqueue(){var t=now();Object.keys(ITEMS).forEach(function(i){var d=ITEM
 function chips(){
   var box=$('lx-chips');if(!box){box=document.createElement('div');box.id='lx-chips';document.body.appendChild(box)}
   var a=inGame()?activeEvents():[],t=now();
-  try{var st=$('st');if(st){var r=st.getBoundingClientRect();box.style.top=(r.bottom+6)+'px';box.style.left=r.left+'px'}}catch(e){}
+  try{var ck=$('clk');if(ck){var r=ck.getBoundingClientRect();box.style.top=(r.bottom+3)+'px';box.style.right=Math.max(4,innerWidth-r.right)+'px'}else{box.style.top='34px';box.style.right='6px'}box.style.left='auto'}catch(e){}
   var ids=a.map(function(d){return d.id}).join(',');
-  if(box.dataset.ids!==ids){box.dataset.ids=ids;box.innerHTML='';a.forEach(function(d){var b=document.createElement('button');b.className='lx-chip';b.setAttribute('data-tr',d.tr);b.innerHTML='<i>'+esc(d.em||'\u{1F389}')+'</i><span>'+esc(chipText(d.fx))+'</span><em></em>';b.onclick=function(){popup(d,true)};b._d=d;box.appendChild(b)})}
+  if(box.dataset.ids!==ids){box.dataset.ids=ids;box.innerHTML='';a.forEach(function(d){var b=document.createElement('button');b.className='lx-chip';b.setAttribute('data-tr',d.tr);b.innerHTML='<i>'+esc(d.em||'\u{1F389}')+'</i><span>'+esc(chipText(d.fx))+'</span><em></em>';b.onclick=function(){popup(d,true)};b._d=d;b.title=(d.ti||chipText(d.fx));box.appendChild(b)})}
   [].forEach.call(box.children,function(b){var e=b.querySelector('em');if(e&&b._d)e.textContent=fmtT(b._d.t1-t)});
 }
 
@@ -4803,8 +4805,8 @@ var CSS='@keyframes lxShine{0%{background-position:0 0}100%{background-position:
 +'.lx-cl{flex:none;min-height:34px;padding:0 12px;border:2px solid var(--g3);border-radius:9px;background:linear-gradient(var(--g1),var(--g2) 60%,var(--g3));color:#2a1a04;font:700 12px Cinzel,Georgia,serif;box-shadow:0 2px 0 #0009,0 0 10px var(--lxg);cursor:pointer}.lx-cl:active{transform:translateY(2px)}.lx-got{flex:none;color:#9bf0b0;font:700 12px "Trebuchet MS",sans-serif}'
 +'.lx-x{position:absolute;top:1px;right:3px;padding:5px 6px;border:0;background:none;color:var(--g1);font-size:13px;opacity:.75;cursor:pointer}'
 +'.lx-bar{position:absolute;left:0;bottom:0;height:2px;width:100%;background:linear-gradient(90deg,var(--g3),var(--g1));transform-origin:left;animation:lxBar linear forwards}'
-+'#lx-chips{position:fixed;z-index:4;display:flex;flex-direction:column;gap:5px;align-items:flex-start;top:130px;left:14px}'
-+'.lx-chip{--lxg:#ffd36a99;display:flex;align-items:center;gap:6px;padding:3px 10px 3px 5px;border-radius:999px;border:2px solid #f3d27a;background:linear-gradient(#4a3512f2,#241706f2);color:#fff1c6;font:700 11px "Trebuchet MS",sans-serif;animation:lxPulse 2.2s infinite;cursor:pointer}.lx-chip i{font-style:normal;font-size:15px}.lx-chip em{font-style:normal;color:#ffd36a;font-variant-numeric:tabular-nums}'
++'#lx-chips{position:fixed;z-index:4;display:flex;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:3px;max-width:56vw;top:34px;right:6px;pointer-events:none}'
++'.lx-chip{--lxg:#ffd36a99;display:flex;align-items:center;gap:3px;padding:1px 6px 1px 3px;border-radius:999px;border:1px solid #f3d27a;background:linear-gradient(#4a3512d9,#241706d9);color:#fff1c6;font:700 9.5px "Trebuchet MS",sans-serif;opacity:.82;cursor:pointer;pointer-events:auto}.lx-chip span{display:none}.lx-chip i{font-style:normal;font-size:11px}.lx-chip em{font-style:normal;color:#ffd36a;font-variant-numeric:tabular-nums}'
 +'.lx-chip[data-tr=royal]{border-color:#c89bff;background:linear-gradient(#3a1d5cf2,#1a0b30f2);--lxg:#c89bffaa}.lx-chip[data-tr=silver]{border-color:#cfe0ff;background:linear-gradient(#2c3a52f2,#131a28f2);--lxg:#cfe0ff88}.lx-chip[data-tr=mythic]{border-color:#7ff0ff;background:linear-gradient(#1f2a4af2,#0a0f22f2);--lxg:#7ff0ffaa}'
 +'@media(prefers-reduced-motion:reduce){.lx-fr,.lx-med,.lx-chip,.lx-sp{animation:none!important}}'
 +'#lx-chat{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);transform:translateX(-50%);z-index:299;max-width:min(88vw,420px);padding:6px 14px;border-radius:14px;border:2px solid #f3d27a;background:linear-gradient(#2a2236f2,#15101ff2);color:#f7efd9;font:12px/1.35 "Trebuchet MS",Verdana,sans-serif;box-shadow:0 4px 12px #0008,0 0 10px #ffd36a55;pointer-events:none;animation:lxDrop .3s ease-out;word-break:break-word}#lx-chat b{color:#ffd36a;margin-right:6px}#lx-chat.out{opacity:0;transition:opacity .3s}'
@@ -5654,6 +5656,73 @@ function demo(tr){
 var m=/[?&#]lxdemo(?:=([a-z]+))?/i.exec(location.search+location.hash);
 if(m)setTimeout(function(){demo((m[1]||'gold').toLowerCase())},1500);
 window.LXDEMO=demo;
+})();
+</script>
+<script id="auto-fs">
+/* Layar penuh + kunci landscape otomatis pada sentuhan pertama (browser mewajibkan gestur pemain, tidak bisa tanpa itu).
+   Hanya perangkat layar sentuh. Jika pemain sengaja keluar layar penuh, game tidak memaksa lagi di kunjungan berikutnya. */
+(function(){
+var de=document.documentElement,done=false,was=false;
+var LSg=function(k){try{return localStorage.getItem(k)}catch(e){return null}},LSs=function(k,v){try{localStorage.setItem(k,v)}catch(e){}};
+var on=function(){return document.fullscreenElement||document.webkitFullscreenElement||null};
+var lock=function(){try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){})}catch(e){}};
+['fullscreenchange','webkitfullscreenchange'].forEach(function(n){document.addEventListener(n,function(){if(on())was=true;else if(was){was=false;LSs('plNoAutoFS','1')}})});
+if(!(window.matchMedia&&matchMedia('(pointer:coarse)').matches))return;
+var evs=['pointerup','touchend','click','keydown'];
+function go(e){
+  if(done)return;
+  if(e&&e.target&&e.target.closest&&e.target.closest('.fsb'))return;
+  done=true;evs.forEach(function(n){document.removeEventListener(n,go,true)});
+  if(LSg('plNoAutoFS')==='1')return;
+  if(on()){lock();return}
+  if(!(de.requestFullscreen||de.webkitRequestFullscreen))return;
+  var p;try{p=de.requestFullscreen?de.requestFullscreen({navigationUI:'hide'}):de.webkitRequestFullscreen()}catch(x){return}
+  Promise.resolve(p).then(lock).catch(function(){})}
+evs.forEach(function(n){document.addEventListener(n,go,true)});
+})();
+</script>
+<script id="pwa">
+/* PWA: service worker (offline), pemberitahuan update, dan tombol "Pasang game" (shortcut di layar utama). */
+(function(){
+var secure=location.protocol==='https:'||location.hostname==='localhost';
+var $=function(i){return document.getElementById(i)};
+var say=function(m){try{toast(m)}catch(e){}};
+var standalone=function(){try{return matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true}catch(e){return false}};
+
+/* --- service worker + update --- */
+if('serviceWorker' in navigator&&secure){
+  navigator.serviceWorker.register('/sw.js').catch(function(){});
+  navigator.serviceWorker.addEventListener('message',function(e){if(e.data&&e.data.type==='upd')banner()});
+}
+function banner(){
+  if($('pwa-upd'))return;
+  var b=document.createElement('div');b.id='pwa-upd';
+  b.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 40px);z-index:301;display:flex;gap:8px;align-items:center;padding:5px 8px 5px 12px;border:2px solid #f3d27a;border-radius:999px;background:#2a2236f2;color:#f7efd9;font:700 12px "Trebuchet MS",Verdana,sans-serif;box-shadow:0 4px 12px #0008';
+  var t=document.createElement('span');t.textContent='\u{1F504} Versi baru tersedia';
+  var go=document.createElement('button');go.textContent='Muat ulang';
+  go.style.cssText='padding:3px 10px;border:2px solid #7a4f0a;border-radius:999px;background:#f3d27a;color:#2a1a04;font:700 12px "Trebuchet MS",sans-serif';
+  go.onclick=function(){try{if(window.SV&&SV.saveNow)SV.saveNow()}catch(e){}location.reload()};
+  var x=document.createElement('button');x.textContent='\u2715';
+  x.style.cssText='border:0;background:none;color:#f3d27a;font-size:13px;padding:2px 4px';x.onclick=function(){b.remove()};
+  b.appendChild(t);b.appendChild(go);b.appendChild(x);document.body.appendChild(b)}
+
+/* --- tombol pasang --- */
+var dp=null,btn=null;
+function guide(){
+  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  var h=ios?'Di <b>Safari</b>: ketuk tombol <b>Bagikan</b> \u2192 <b>Tambah ke Layar Utama</b>.':'Di <b>Chrome</b>: ketuk menu <b>\u22ee</b> \u2192 <b>Pasang aplikasi</b> (atau <b>Tambahkan ke layar utama</b>).';
+  try{modal('\u{1F4F2} Pasang game','Pasang sebagai ikon di layar utama supaya tidak perlu membuka link lagi, tampil layar penuh, dan bisa dimainkan offline.<br><br>'+h,[{t:'Tutup'}])}catch(e){alert(h.replace(/<[^>]+>/g,''))}}
+function mk(){
+  if(btn||standalone())return;
+  var sc=document.querySelector('#start .card');if(!sc)return;
+  btn=document.createElement('button');btn.id='sinst';btn.type='button';btn.textContent='\u{1F4F2} Pasang game (shortcut)';
+  btn.onclick=function(){
+    if(dp){dp.prompt();dp.userChoice.then(function(r){dp=null;if(r&&r.outcome==='accepted'){say('Game terpasang');if(btn){btn.remove();btn=null}}}).catch(function(){})}
+    else guide()};
+  var a=$('sfs');if(a&&a.nextSibling)sc.insertBefore(btn,a.nextSibling);else sc.appendChild(btn)}
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;mk()});
+window.addEventListener('appinstalled',function(){dp=null;if(btn){btn.remove();btn=null}});
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mk);else mk();
 })();
 </script>
 </body></html>
