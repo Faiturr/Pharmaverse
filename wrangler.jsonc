@@ -1,6 +1,6 @@
 {
   "name": "odd-king-296f",
-  "main": "worker.js",
+  "main": "src/index.js",
   "compatibility_date": "2026-11-01",
   "assets": {
     "directory": "./",
