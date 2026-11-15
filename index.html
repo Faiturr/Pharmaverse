@@ -5710,6 +5710,16 @@ html body #prolog .pl-ft{flex:none}
 .fb-w textarea{width:100%;box-sizing:border-box;min-height:96px;max-height:30vh;resize:vertical;padding:7px;border:2px solid #372619;background:#fff;color:#372619;font:inherit;user-select:text;-webkit-user-select:text;touch-action:auto}
 .fb-c{text-align:right;font-size:11px;opacity:.75}
 .fb-i{border:1px solid #b8a686;background:#fff8;padding:5px 7px;margin:5px 0}.fb-i b{color:#8c4b36}
+.onl-i{display:flex;justify-content:space-between;gap:8px;padding:4px 6px;border-bottom:1px dashed #b8a686}.onl-i.me{background:#c0ae7355;font-weight:700}.onl-d{display:inline-block;width:9px;height:9px;border-radius:50%;background:#3fbf6a;margin-right:6px}
+#bonl{position:relative}#bonl i{position:absolute;right:-4px;top:-6px;background:#2d6843;color:#fff;font:700 9px/13px sans-serif;min-width:13px;text-align:center;border-radius:7px;font-style:normal;padding:0 2px;border:1px solid #fff}
+#bt #btog{order:-1;width:36px!important;min-height:32px!important;padding:0!important;font-size:16px!important;line-height:1;background:#372619!important;color:#f0ecde!important;border:2px solid #c0ae73!important;box-shadow:0 0 0 2px #372619,0 2px 3px #0006!important;pointer-events:auto;text-align:center;transition:transform .15s}
+#bt #btog:active{transform:scale(.88)}
+#bt.hc>button:not(#btog){display:none!important}
+#bt:not(.hc):not(.cl)>button:not(#btog){animation:btout .32s cubic-bezier(.2,1.5,.4,1) both;animation-delay:calc(var(--i,0)*45ms)}
+#bt.cl>button:not(#btog){animation:btin .2s ease-in both;animation-delay:calc((var(--n,0) - var(--i,0))*30ms)}
+@keyframes btout{from{opacity:0;transform:translateX(-22px) scale(.3)}to{opacity:1;transform:none}}
+@keyframes btin{from{opacity:1;transform:none}to{opacity:0;transform:translateX(-22px) scale(.3)}}
+@media(prefers-reduced-motion:reduce){#bt:not(.hc)>button,#bt.cl>button{animation:none!important}}
 </style>
 <script id="fix-dialog-pojok-js">
 (function(){
@@ -5760,6 +5770,38 @@ async function inbox(){
     fbRows(j.rows||[],inbox)}
   catch(e){modal('Kotak masuk developer','Gagal terhubung ke server. Cek koneksi lalu coba lagi.',[{t:'Coba lagi',fn:inbox},{t:'Tutup'}])}}
 window.pojokDeveloper=pojok;
+/* ---------- HUD: menu digulung jadi satu kotak ---------- */
+var HO=true;try{HO=localStorage.getItem('plHudOpen')!=='0'}catch(e){}
+function hbtns(){var bt=$('bt');return bt?Array.prototype.filter.call(bt.children,function(c){return c.tagName==='BUTTON'&&c.id!=='btog'}):[]}
+function hpaint(){var t=$('btog'),bt=$('bt');if(bt)bt.classList.toggle('hc',!HO);if(t){t.textContent=HO?'\u2715':'\u2630';t.title=HO?'Gulung menu':'Buka menu';t.setAttribute('aria-expanded',HO?'true':'false')}}
+function htoggle(){var bt=$('bt');if(!bt)return;var a=hbtns();a.forEach(function(b,i){b.style.setProperty('--i',i)});bt.style.setProperty('--n',a.length);
+  try{localStorage.setItem('plHudOpen',HO?'0':'1')}catch(e){}
+  if(HO){HO=false;bt.classList.add('cl');var t=$('btog');if(t)t.textContent='\u2630';setTimeout(function(){bt.classList.remove('cl');hpaint()},a.length*30+230)}
+  else{HO=true;bt.classList.remove('cl');hpaint()}}
+function hud3(){var bt=$('bt');if(!bt)return;if(!$('btog')){var b=document.createElement('button');b.id='btog';b.type='button';b.onclick=htoggle;bt.appendChild(b);hpaint()}
+  hbtns().forEach(function(x,i){x.style.setProperty('--i',i)})}
+hud3();setInterval(hud3,1500);
+
+/* ---------- Pemain online ---------- */
+var IDR=/^[A-Za-z0-9-]{16,64}$/,onN=0;
+function myId(){var d=null;try{d=localStorage.getItem('plLbId')}catch(e){}try{if(typeof S!=='undefined'&&S&&IDR.test(S.lid||''))return S.lid}catch(e){}return IDR.test(d||'')?d:null}
+function inGame(){try{var st=$('start');return !!(typeof S!=='undefined'&&S&&!S.tp&&st&&st.hidden&&myId())}catch(e){return false}}
+function lvN(){try{return lvl()+1}catch(e){return 1}}
+function badge(){var b=$('bonl');if(b){var i=b.querySelector('i');if(i)i.textContent=onN>99?'99+':onN}}
+async function ping(off){if(!off&&(document.visibilityState!=='visible'||!inGame()))return;if(off&&!myId())return;
+  try{var x=await fetch(location.origin+'/ping',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:myId(),name:nm(),lv:lvN(),off:off?1:0}),keepalive:true});
+    if(x.ok){var j=await x.json();onN=j.n||0;badge()}}catch(e){}}
+async function onlineUI(){modal('\u{1F465} Pemain online','Memuat\u2026',[{t:'Tutup'}]);
+  try{var x=await fetch(location.origin+'/online?me='+encodeURIComponent(myId()||''),{cache:'no-store'});if(!x.ok)throw 0;var j=await x.json();onN=j.n||0;badge();
+    modal('\u{1F465} Pemain online','<div class="fb-w"><b><span class="onl-d"></span>'+Number(j.n)+' pemain online</b><small> (aktif dalam 75 detik terakhir)</small><div style="margin-top:6px">'+(j.players.length?j.players.map(function(q){return'<div class="onl-i'+(q.me?' me':'')+'"><span>'+E(q.name)+(q.me?' (kamu)':'')+'</span><span>Lv'+Number(q.lv)+'</span></div>'}).join(''):'Belum ada pemain online.')+'</div>'+(j.n>j.players.length?'<small>Menampilkan '+j.players.length+' teratas.</small>':'')+'</div>',[{t:'Segarkan',fn:onlineUI},{t:'Tutup'}])}
+  catch(e){modal('\u{1F465} Pemain online','Tidak bisa memuat daftar. Pastikan server online.',[{t:'Coba lagi',fn:onlineUI},{t:'Tutup'}])}}
+window.pemainOnline=onlineUI;
+function hud2(){var bt=$('bt');if(bt&&!$('bonl')){var b=document.createElement('button');b.id='bonl';b.type='button';b.title='Pemain online';b.innerHTML='\u{1F465}<i>0</i>';b.onclick=onlineUI;bt.appendChild(b)}}
+hud2();setInterval(hud2,3000);setInterval(function(){ping(false)},30000);setTimeout(function(){ping(false)},5000);
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')ping(false)});
+addEventListener('pagehide',function(){try{if(myId())navigator.sendBeacon(location.origin+'/ping',new Blob([JSON.stringify({id:myId(),off:1})],{type:'application/json'}))}catch(e){}});
+var _m1=menu;menu=function(){_m1.apply(this,arguments);try{var x=$('mbtn'),b=document.createElement('button');b.textContent='\u{1F465} Pemain online';b.onclick=function(){if(performance.now()-MO<400)return;onlineUI()};x.insertBefore(b,x.children[Math.min(2,x.children.length-1)])}catch(e){}};
+
 var _m0=menu;menu=function(){_m0.apply(this,arguments);try{var x=$('mbtn'),b=document.createElement('button');b.textContent='\u{1F4EE} Pojok Developer';b.onclick=function(){if(performance.now()-MO<400)return;pojok()};x.insertBefore(b,x.firstElementChild?x.children[Math.min(1,x.children.length-1)]:null)}catch(e){}};
 function hud(){var bt=$('bt');if(bt&&!$('bfb')){var b=document.createElement('button');b.id='bfb';b.type='button';b.title='Pojok Developer';b.textContent='\u{1F4EE}';b.onclick=pojok;bt.appendChild(b)}}
 hud();setInterval(hud,3000);setTimeout(flush,4000);
